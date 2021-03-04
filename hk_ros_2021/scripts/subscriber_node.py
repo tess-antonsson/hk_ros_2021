@@ -5,22 +5,30 @@ import rospy
 import tf
 import tf_conversions
 import yaml
+import ruamel.yaml
 import json
 import math
 import tf2_ros
 import geometry_msgs.msg
 import numpy
 import rospkg
+import cv2
+from darknet_ros_msgs.msg import BoundingBoxes, ObjectCount
+from sensor_msgs.msg import LaserScan
+import turtlesim.msg
 from std_msgs.msg import String,Float32,Float32MultiArray,MultiArrayLayout,MultiArrayDimension
 from apriltag_ros.msg import AprilTagDetectionArray
 
-rospy.init_node('AprilListener', anonymous = True)
+rospy.init_node('Listener', anonymous = True)
+#rospy.init_node('YOLOListener')
 listen = tf.TransformListener()
 
-filename = "latest_output_file.yaml"
+filename = "all_outputs.yaml"
 filepath = rospkg.RosPack().get_path('hk_ros_2021') + '/exported_detection_logs/'
-#detections = []
+detections = []
 taglist= [None] * 10
+finApril = []
+
 
 def Aprildetections(msg):
 
@@ -37,10 +45,9 @@ def Aprildetections(msg):
 
             if coordinates is not None:
 
-                strang = "XY_pos: " + str(coordinates) + ", obj_type: A"
-
+                strang = "Tag: " + str(IDnum) + ", XY_pos: " + str(coordinates) + ", obj_type: A"
                 taglist[IDnum] = strang
-
+                #taglist.append(    detections = taglist + animalist{"Tag: " + str(IDnum),", XY_pos: " + str(coordinates),", obj_type: A"})
                 print(taglist)
 
         rate.sleep()
@@ -65,12 +72,23 @@ def tagTransform(tagId):
 
 #         detections.append({"obj_type": "A", "XY_pos" : x['coords'], "name" : x['name']})
 
+def stadauppskit(aprillista):
+
+    for index in aprillista:
+        if index is not None:
+            finApril.append(index)
+
+    return finApril
+
+
 if __name__ == '__main__':
 
     rospy.Subscriber('/tag_detections', AprilTagDetectionArray, Aprildetections)
 
-
     rospy.spin()
+
+    taglist = stadauppskit(taglist)
+    #detections = taglist + animalist
 
     with open(filepath + filename, 'w') as outfile:
         yaml.dump(taglist, outfile, explicit_start=True)
